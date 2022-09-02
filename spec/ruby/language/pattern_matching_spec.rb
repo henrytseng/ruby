@@ -5,6 +5,157 @@ ruby_version_is "2.7" do
     # TODO: Remove excessive eval calls when support of previous version
     #       Ruby 2.6 will be dropped
 
+<<<<<<< Updated upstream
+=======
+  before :each do
+    ScratchPad.record []
+  end
+
+  ruby_version_is "3.0" do
+    it "can be standalone assoc operator that deconstructs value" do
+      suppress_warning do
+        eval(<<-RUBY).should == [0, 1]
+          [0, 1] => [a, b]
+          [a, b]
+        RUBY
+      end
+    end
+
+    describe "find pattern" do
+      it "captures preceding elements to the pattern" do
+        eval(<<~RUBY).should == [0, 1]
+          case [0, 1, 2, 3]
+          in [*pre, 2, 3]
+            pre
+          else
+            false
+          end
+        RUBY
+      end
+
+      it "captures following elements to the pattern" do
+        eval(<<~RUBY).should == [2, 3]
+          case [0, 1, 2, 3]
+          in [0, 1, *post]
+            post
+          else
+            false
+          end
+        RUBY
+      end
+
+      it "captures both preceding and following elements to the pattern" do
+        eval(<<~RUBY).should == [[0, 1], [3, 4]]
+          case [0, 1, 2, 3, 4]
+          in [*pre, 2, *post]
+            [pre, post]
+          else
+            false
+          end
+        RUBY
+      end
+
+      it "can capture the entirety of the pattern" do
+        eval(<<~RUBY).should == [0, 1, 2, 3, 4]
+          case [0, 1, 2, 3, 4]
+          in [*everything]
+            everything
+          else
+            false
+          end
+        RUBY
+      end
+
+      it "will match an empty Array-like structure" do
+        eval(<<~RUBY).should == []
+          case []
+          in [*everything]
+            everything
+          else
+            false
+          end
+        RUBY
+      end
+
+      it "can be nested" do
+        eval(<<~RUBY).should == [[0, [2, 4, 6]], [[4, 16, 64]], 27]
+          case [0, [2, 4, 6], [3, 9, 27], [4, 16, 64]]
+          in [*pre, [*, 9, a], *post]
+            [pre, post, a]
+          else
+            false
+          end
+        RUBY
+      end
+
+      it "can be nested with an array pattern" do
+        eval(<<~RUBY).should == [[4, 16, 64]]
+          case [0, [2, 4, 6], [3, 9, 27], [4, 16, 64]]
+          in [_, _, [*, 9, *], *post]
+            post
+          else
+            false
+          end
+        RUBY
+      end
+
+      it "can be nested within a hash pattern" do
+        eval(<<~RUBY).should == [27]
+          case {a: [3, 9, 27]}
+          in {a: [*, 9, *post]}
+            post
+          else
+            false
+          end
+        RUBY
+      end
+
+      it "can nest hash and array patterns" do
+        eval(<<~RUBY).should == [42, 2]
+          case [0, {a: 42, b: [0, 1]}, {a: 42, b: [1, 2]}]
+          in [*, {a:, b: [1, c]}, *]
+            [a, c]
+          else
+            false
+          end
+        RUBY
+      end
+    end
+  end
+
+  it "extends case expression with case/in construction" do
+    eval(<<~RUBY).should == :bar
+      case [0, 1]
+      in [0]
+        :foo
+      in [0, 1]
+        :bar
+      end
+    RUBY
+  end
+
+  it "allows using then operator" do
+    eval(<<~RUBY).should == :bar
+      case [0, 1]
+      in [0]    then :foo
+      in [0, 1] then :bar
+      end
+    RUBY
+  end
+
+  it "allows using object shorthand within scope" do
+    eval(<<~RUBY).should == { foo: :bar }
+      case { foo: :bar }
+      in { foo: :bar }
+        [{ foo: :bar }, 1].filter { _1 in foo: :bar }
+      in { foo: :quox }
+        [{ foo: :bar }, 1].filter { _1 in foo: :bar }
+      end
+    RUBY
+  end
+
+  describe "warning" do
+>>>>>>> Stashed changes
     before :each do
       ScratchPad.record []
     end
